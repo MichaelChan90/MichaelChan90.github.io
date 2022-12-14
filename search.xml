@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Hello World</title>
+    <url>/2022/12/13/hello-world/</url>
+    <content><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="https://cdn.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.css"><script src="https://cdn.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="https://cdn.jsdelivr.net/npm/meting@1/dist/Meting.min.js"></script><p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
+<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p>
+<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p>
+<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p>
+<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
+
+<p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+]]></content>
+  </entry>
+  <entry>
+    <title>win10下chrome无痕模式打开</title>
+    <url>/2020/05/25/win10%E4%B8%8Bchrome%E6%97%A0%E7%97%95%E6%A8%A1%E5%BC%8F%E6%89%93%E5%BC%80/</url>
+    <content><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="https://cdn.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.css"><script src="https://cdn.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="https://cdn.jsdelivr.net/npm/meting@1/dist/Meting.min.js"></script><p>[TOC]</p>
+<h1 id="chrome桌面图标默认使用无痕模式打开"><a href="#chrome桌面图标默认使用无痕模式打开" class="headerlink" title="chrome桌面图标默认使用无痕模式打开"></a>chrome桌面图标默认使用无痕模式打开</h1><pre><code>     桌面图标默认使用无痕模式这个教程最多，具体修改方式如下：
+</code></pre>
+<p>​         鼠标右键点击chrome的桌面快捷方式，选择属性，打开后，选择快捷方式属性，然后修改目标栏的值，</p>
+<p>在<code>C:\Program Files (x86)\Google\Chrome\Application\chrome.exe</code>后面添加 -incognito</p>
+<h1 id="chrome任务栏默认使用无痕模式打开"><a href="#chrome任务栏默认使用无痕模式打开" class="headerlink" title="chrome任务栏默认使用无痕模式打开"></a>chrome任务栏默认使用无痕模式打开</h1><p>​		这个修改的教程就相对较少了，修改方式如下：</p>
+<p>​		打开<code>C:\Users\XXXX\AppData\Roaming\Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar</code>路径，在下面找到chrome的快捷图标，修改方式与chrome桌面桌面图标修改方式相同：右键chrome图标，选择属性，打开后，选择快捷方式属性，然后修改目标栏的值，在<code>C:\Program Files (x86)\Google\Chrome\Application\chrome.exe</code>后面添加<code> -incognito</code></p>
+<h1 id="chrome外部链接默认使用无痕模式打开"><a href="#chrome外部链接默认使用无痕模式打开" class="headerlink" title="chrome外部链接默认使用无痕模式打开"></a>chrome外部链接默认使用无痕模式打开</h1><p>​		1、按下<code>Win+R</code>键，在打开的运行对话框中输入<code>regedit</code>,然后回车开发系统注册表；</p>
+<p>​		2、按照顺序展开注册表<code>HKEY_CLASSES_ROOT\ChromeHTML\shell\open\command</code>,在右侧的内容中，双击“默认”，弹出编辑字符串。在“数值数据”一栏中后面添加 <code>--incognito</code>参数。例如：<code>&quot;C:\Program Files (x86)\Google\Chrome\Application\chrome.exe&quot; -- &quot;%1&quot;</code>修改为<code>&quot;C:\Program Files (x86)\Google\Chrome\Application\chrome.exe&quot; --incognito -- &quot;%1&quot;</code></p>
+<p><em>注意：如果<code>C:\Program Files (x86)\Google\Chrome\Application\chrome.exe</code>被引号引起来，在在引号后面添加<code>-incognito</code>。另外<code>-incognito</code>前面有一个空格</em></p>
+]]></content>
+  </entry>
+</search>
