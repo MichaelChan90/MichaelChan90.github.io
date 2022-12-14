@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Mac卸载Java</title>
+    <url>/2022/12/14/Mac%E5%8D%B8%E8%BD%BDJava/</url>
+    <content><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="https://cdn.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.css"><script src="https://cdn.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="https://cdn.jsdelivr.net/npm/meting@1/dist/Meting.min.js"></script><p>打开命令好终端执行以下命令</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo rm -fr /Library/Internet\ Plug-Ins/JavaAppletPlugin.plugin</span><br><span class="line"></span><br><span class="line">sudo rm -fr /Library/PreferencesPanes/JavaControlPanel.prefPane</span><br><span class="line"></span><br><span class="line">sudo rm -fr /Library/Application\ Support/Java</span><br><span class="line"></span><br><span class="line"># /Library/Java/JavaVirtualMachines 目录下为安装的所有版本JDK</span><br><span class="line">sudo rm -rf /Library/Java</span><br></pre></td></tr></table></figure>
+
+]]></content>
+  </entry>
+  <entry>
     <title>chrome在windows使用无痕模式</title>
     <url>/2022/12/14/chrome%E5%9C%A8windows%E4%BD%BF%E7%94%A8%E6%97%A0%E7%97%95%E6%A8%A1%E5%BC%8F/</url>
     <content><![CDATA[<link rel="stylesheet" class="aplayer-secondary-style-marker" href="https://cdn.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.css"><script src="https://cdn.jsdelivr.net/npm/aplayer@latest/dist/APlayer.min.js" class="aplayer-secondary-script-marker"></script><script class="meting-secondary-script-marker" src="https://cdn.jsdelivr.net/npm/meting@1/dist/Meting.min.js"></script><h1 id="桌面图标无痕打开"><a href="#桌面图标无痕打开" class="headerlink" title="桌面图标无痕打开"></a>桌面图标无痕打开</h1><pre><code>     chrome桌面图标默认使用无痕模式这个教程最多，具体修改方式如下：
