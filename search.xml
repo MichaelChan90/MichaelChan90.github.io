@@ -7,6 +7,10 @@
 <figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo rm -fr /Library/Internet\ Plug-Ins/JavaAppletPlugin.plugin</span><br><span class="line"></span><br><span class="line">sudo rm -fr /Library/PreferencesPanes/JavaControlPanel.prefPane</span><br><span class="line"></span><br><span class="line">sudo rm -fr /Library/Application\ Support/Java</span><br><span class="line"></span><br><span class="line"># /Library/Java/JavaVirtualMachines 目录下为安装的所有版本JDK</span><br><span class="line">sudo rm -rf /Library/Java</span><br></pre></td></tr></table></figure>
 
 ]]></content>
+      <tags>
+        <tag>mac</tag>
+        <tag>开发</tag>
+      </tags>
   </entry>
   <entry>
     <title>chrome在windows使用无痕模式</title>
@@ -21,5 +25,8 @@
 <p>​		2、按照顺序展开注册表<code>HKEY_CLASSES_ROOT\ChromeHTML\shell\open\command</code>,在右侧的内容中，双击“默认”，弹出编辑字符串。在“数值数据”一栏中后面添加 <code>--incognito</code>参数。例如：<code>&quot;C:\Program Files (x86)\Google\Chrome\Application\chrome.exe&quot; -- &quot;%1&quot;</code>修改为<code>&quot;C:\Program Files (x86)\Google\Chrome\Application\chrome.exe&quot; --incognito -- &quot;%1&quot;</code></p>
 <p><em>注意：如果<code>C:\Program Files (x86)\Google\Chrome\Application\chrome.exe</code>被引号引起来，在在引号后面添加<code>-incognito</code>。另外<code>-incognito</code>前面有一个空格</em></p>
 ]]></content>
+      <tags>
+        <tag>windows</tag>
+      </tags>
   </entry>
 </search>
