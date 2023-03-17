@@ -1,0 +1,266 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="Michael Chan"><meta name="copyright" content="Michael Chan"><meta name="generator" content="Hexo 6.3.0"><meta name="theme" content="hexo-theme-yun"><title>Centos时钟同步 | MichaelChan Blog</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/star-markdown-css@0.4.1/dist/yun/yun-markdown.min.css"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/prism-theme-vars/base.css"><script src="https://fastly.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".markdown-body img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="mask-icon" href="/favicon.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fastly.jsdelivr.net/npm/" crossorigin><script id="yun-config">
+    window.Yun = {}
+    window.CONFIG = {"hostname":"michaelchan90.github.io","root":"/","title":"星无尘的博客","version":"1.10.9","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.yunyoujun.cn/img/avatar/none.jpg","say":{"api":"https://v1.hitokoto.cn","hitokoto":true},"local_search":{"path":"/search.xml"},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"fireworks":{"colors":null},"vendors":{"host":"https://fastly.jsdelivr.net/npm/","darken":"https://fastly.jsdelivr.net/npm/darken@1.5.0"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/hexo-theme-yun.js" type="module"></script><link rel="preconnect" href="https://www.google-analytics.com" crossorigin><script async src="https://www.googletagmanager.com/gtag/js?id=UA-164931119-1"></script><script>if (CONFIG.hostname === location.hostname) {
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-164931119-1');
+}</script><script data-ad-client="ca-pub-9775647830683925" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(function(){
+  var bp = document.createElement('script');
+  var curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else {
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})();</script><meta name="description" content="时钟​		Linux时钟有两种：（1）系统时钟（System Clock）：由Linux内核通过CPU的工作频率进行（2）硬件时钟（RealTime Clock）：主板时钟 ​        系统时钟是基于内存的，断电则数据将丢失；硬件时间是写在硬件中的bios程序中。当Linux启动时，硬件时钟会读取系统时钟设置，然后系统时钟就会独立于硬件运作。因此系统时钟和硬件时钟可以采用异步方式，即系统时间">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Centos时钟同步">
+<meta property="og:url" content="http://michaelchan90.github.io/2023/03/13/Centos%E6%97%B6%E9%92%9F%E5%90%8C%E6%AD%A5/index.html">
+<meta property="og:site_name" content="MichaelChan Blog">
+<meta property="og:description" content="时钟​		Linux时钟有两种：（1）系统时钟（System Clock）：由Linux内核通过CPU的工作频率进行（2）硬件时钟（RealTime Clock）：主板时钟 ​        系统时钟是基于内存的，断电则数据将丢失；硬件时间是写在硬件中的bios程序中。当Linux启动时，硬件时钟会读取系统时钟设置，然后系统时钟就会独立于硬件运作。因此系统时钟和硬件时钟可以采用异步方式，即系统时间">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-13T02:03:20.000Z">
+<meta property="article:modified_time" content="2023-03-13T08:55:12.573Z">
+<meta property="article:author" content="Michael Chan">
+<meta name="twitter:card" content="summary"><script>(function() {
+  if (CONFIG.mode !== 'auto') return
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const setting = localStorage.getItem('darken-mode') || 'auto'
+  if (setting === 'dark' || (prefersDark && setting !== 'light'))
+    document.documentElement.classList.toggle('dark', true)
+})()</script></head><body><script src="https://code.iconify.design/2/2.1.1/iconify.min.js"></script><script>// Define global variable
+IconifyProviders = {
+  // Empty prefix: overwrite default API provider configuration
+  '': {
+    // Use custom API first, use Iconify public API as backup
+    resources: [
+        'https://api.iconify.design',
+    ],
+    // Wait for 1 second before switching API hosts
+    rotate: 1000,
+  },
+};</script><script defer src="https://fastly.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js" type="module"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js" type="module"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button sidebar-nav-active" data-target="post-toc-wrap" title="文章目录"><span class="icon iconify" data-icon="ri:list-ordered"></span></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button" data-target="site-overview-wrap" title="站点概览"><span class="icon iconify" data-icon="ri:passport-line"></span></li></ul><div class="sidebar-panel" id="site-overview-wrap"><div class="site-info mickey-mouse"><a class="site-author-avatar" href="/about/" title="Michael Chan"><img width="96" loading="lazy" src="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/go.jpg" alt="Michael Chan"><span class="site-author-status" title="又是新的一天">🤔</span></a><div class="site-author-name"><a href="/about/">Michael Chan</a></div><a class="site-name" href="/about/site.html">MichaelChan Blog</a><sub class="site-subtitle">星无尘</sub><div class="site-description"></div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="主页"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:home-4-line"></span></span></a><div class="site-state-item"><a href="/archives/" title="归档(archives)"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:archive-line"></span></span><span class="site-state-item-count">19</span></a></div><div class="site-state-item"><a href="/categories/" title="分类(categories)"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:folder-2-line"></span></span><span class="site-state-item-count">13</span></a></div><div class="site-state-item"><a href="/tags/" title="标签(tags)"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="site-state-item-count">3</span></a></div></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://github.com/michaelchan90" title="GitHub" target="_blank" style="color:#181717"><span class="icon iconify" data-icon="ri:github-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="mailto:michaelchan90@outlook.com" title="E-Mail" target="_blank" style="color:#8E71C1"><span class="icon iconify" data-icon="ri:mail-line"></span></a></div><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><span class="icon iconify" data-icon="ri:genderless-line"></span></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><span class="icon iconify" data-icon="ri:contrast-2-line"></span></a></div><div class="sidebar-panel sidebar-panel-active" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%97%B6%E9%92%9F"><span class="toc-number">1.</span> <span class="toc-text">时钟</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%A0%87%E5%87%86%E6%97%B6%E9%97%B4"><span class="toc-number">1.1.</span> <span class="toc-text">标准时间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BD%91%E7%BB%9C%E6%97%B6%E9%97%B4%EF%BC%88NTP%EF%BC%89%E5%8D%8F%E8%AE%AE"><span class="toc-number">1.2.</span> <span class="toc-text">网络时间（NTP）协议</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#NTP%E6%A0%A1%E6%97%B6%E6%96%B9%E5%BC%8F"><span class="toc-number">1.3.</span> <span class="toc-text">NTP校时方式</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#ntpdate%E4%B8%8Echrony"><span class="toc-number">2.</span> <span class="toc-text">ntpdate与chrony</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%89%8B%E5%B7%A5%E4%BF%AE%E6%94%B9%E7%B3%BB%E7%BB%9F%E6%97%B6%E9%97%B4%E4%B8%8E%E6%97%B6%E5%8C%BA"><span class="toc-number">2.1.</span> <span class="toc-text">手工修改系统时间与时区</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#ntpdate%E5%90%8C%E6%AD%A5%E4%BA%92%E8%81%94%E7%BD%91%E6%97%B6%E9%97%B4"><span class="toc-number">2.2.</span> <span class="toc-text">ntpdate同步互联网时间</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#chrony%E5%90%8C%E6%AD%A5%E4%BA%92%E8%81%94%E7%BD%91%E6%97%B6%E9%97%B4"><span class="toc-number">2.3.</span> <span class="toc-text">chrony同步互联网时间</span></a></li></ol></li></ol></div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article" style="--smc-primary:#0078E7;"><link itemprop="mainEntityOfPage" href="http://michaelchan90.github.io/2023/03/13/Centos%E6%97%B6%E9%92%9F%E5%90%8C%E6%AD%A5/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Michael Chan"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="MichaelChan Blog"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">Centos时钟同步</h1><div class="post-meta"><div class="post-time" style="display:block"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:calendar-line"></span></span> <time title="创建时间：2023-03-13 10:03:20" itemprop="dateCreated datePublished" datetime="2023-03-13T10:03:20+08:00">2023-03-13</time></div><span class="post-count"><span class="post-symbolcount"><span class="post-meta-item-icon" title="本文字数"><span class="icon iconify" data-icon="ri:file-word-line"></span></span> <span title="本文字数">3.9k</span><span class="post-meta-divider">-</span><span class="post-meta-item-icon" title="阅读时长"><span class="icon iconify" data-icon="ri:timer-line"></span></span> <span title="阅读时长">14m</span></span></span><span class="post-busuanzi"><span class="post-meta-divider">-</span><span class="post-meta-item-icon" title="阅读次数"><span class="icon iconify" data-icon="ri:eye-line"></span> <span id="busuanzi_value_page_pv"></span></span></span><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><span class="icon iconify" data-icon="ri:folder-line"></span></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/%E8%BF%90%E7%BB%B4%E5%AE%89%E8%A3%85/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">运维安装</span></a></span></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body"><h1 id="时钟"><a href="#时钟" class="headerlink" title="时钟"></a>时钟</h1><p>​		Linux时钟有两种：（1）系统时钟（System Clock）：由Linux内核通过CPU的工作频率进行（2）硬件时钟（RealTime Clock）：主板时钟</p>
+<p>​        系统时钟是基于内存的，断电则数据将丢失；硬件时间是写在硬件中的bios程序中。当Linux启动时，硬件时钟会读取系统时钟设置，然后系统时钟就会独立于硬件运作。因此系统时钟和硬件时钟可以采用异步方式，即系统时间和硬件时间可以不同。从Linux启动过程来看，系统时钟和硬件时钟不会发生冲突，但是Linux中的所有命令都是采用系统时钟设置。</p>
+<h2 id="标准时间"><a href="#标准时间" class="headerlink" title="标准时间"></a>标准时间</h2><p>​		早期，标准时间采用的是<strong>格林尼治时间</strong>，即<code>GMT</code>，也称为<strong>世界时</strong>。它是指英国伦敦格林尼治天文台的标准时间，是以地球自转为基础，根据太阳横穿格林尼治本初子午线（即0度经线）来确定标准时间，用天来定义秒的计量系统，是基于天文学的。由于地球自转速度不均匀，并且正在缓慢减速，因此，在<code>GMT</code>下，每天的一秒在微观尺度上和其它天的都不相同，不是一种均匀的时间系统。</p>
+<p>​		基于某些元素的原子能级跃迁频率有极高的稳定性这一特点，1967年国际度量衡大会对秒重新进行了定义：铯133元素的两个超精细能阶之间跃迁时所辐射的电磁波的周期的<code>9,192,631,770</code>倍的时间定义为一秒。在此基础上，1971年由国际时间局建立了国际原子时（<code>TAI</code>），并取1958年1月1日0时0分0秒世界时的瞬间作为同年同月同日0时0分0秒<code>TAI</code>。因此，<code>TAI</code>是基于物理学，为一种极其精确的时间系统，是用秒来定义天。</p>
+<p>​		为解决<code>TAI</code>和<code>GMT</code>之间的时间误差，协调世界时于1972年面世。协调世界时，又称<strong>世界标准时间、国际协调时间</strong>，简称<code>UTC</code>。以<code>TAI</code>秒长为基础，当<code>GMT</code>与<code>TAI</code>之间时刻相差超过0.9秒时，通过在当年的6月30日或12月31日的最后时刻增减1秒进行修正，在时刻上尽量接近<code>GMT</code>。这就是<strong>闰秒</strong>。自1972年以来，一共进行了27次闰秒调整，都是正闰秒，即增加一秒。</p>
+<table>
+<thead>
+<tr>
+<th>实施年份</th>
+<th>6月30日23:59:60</th>
+<th>12月31日23:59:60</th>
+<th>实施年份</th>
+<th>6月30日23:59:60</th>
+<th>12月31日23:59:60</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1972年</td>
+<td>+1秒</td>
+<td>+1秒</td>
+<td>1989年</td>
+<td>——</td>
+<td>+1秒</td>
+</tr>
+<tr>
+<td>1973年</td>
+<td>——</td>
+<td>+1秒</td>
+<td>1990年</td>
+<td>——</td>
+<td>+1秒</td>
+</tr>
+<tr>
+<td>1974年</td>
+<td>——</td>
+<td>+1秒</td>
+<td>1992年</td>
+<td>+1秒</td>
+<td>——</td>
+</tr>
+<tr>
+<td>1975年</td>
+<td>——</td>
+<td>+1秒</td>
+<td>1993年</td>
+<td>+1秒</td>
+<td>——</td>
+</tr>
+<tr>
+<td>1976年</td>
+<td>——</td>
+<td>+1秒</td>
+<td>1994年</td>
+<td>+1秒</td>
+<td>——</td>
+</tr>
+<tr>
+<td>1977年</td>
+<td>——</td>
+<td>+1秒</td>
+<td>1995年</td>
+<td>——</td>
+<td>+1秒</td>
+</tr>
+<tr>
+<td>1978年</td>
+<td>——</td>
+<td>+1秒</td>
+<td>1997年</td>
+<td>+1秒</td>
+<td>——</td>
+</tr>
+<tr>
+<td>1979年</td>
+<td>——</td>
+<td>+1秒</td>
+<td>1998年</td>
+<td>——</td>
+<td>+1秒</td>
+</tr>
+<tr>
+<td>1981年</td>
+<td>+1秒</td>
+<td>——</td>
+<td>2005年</td>
+<td>——</td>
+<td>+1秒</td>
+</tr>
+<tr>
+<td>1982年</td>
+<td>+1秒</td>
+<td>——</td>
+<td>2008年</td>
+<td>——</td>
+<td>+1秒</td>
+</tr>
+<tr>
+<td>1983年</td>
+<td>+1秒</td>
+<td>——</td>
+<td>2012年</td>
+<td>+1秒</td>
+<td>——</td>
+</tr>
+<tr>
+<td>1985年</td>
+<td>+1秒</td>
+<td>——</td>
+<td>2015年</td>
+<td>+1秒</td>
+<td>——</td>
+</tr>
+<tr>
+<td>1987年</td>
+<td>——</td>
+<td>+1秒</td>
+<td>2016年</td>
+<td>——</td>
+<td>+1秒</td>
+</tr>
+</tbody></table>
+<p>​		<strong>闰秒</strong>在当今存在一些争议。一些国家（如美国、法国、日本）认为应该直接使用<code>TAI</code>，不需要闰秒。因为要让世界各国在同一个瞬间增加一个闰秒，绝非易事。稍有疏忽，很多重要系统就会因时间误差而导致混乱。而且，基于<strong>闰秒</strong>出现的无规律性和不可预知性，要在设备上预留“置闰”设置也非常麻烦。总而言之，<strong>闰秒</strong>会让全世界付出更多的许多人力财力成本。而另一些国家（如中国、英国、俄罗斯）则认为，在地球越转越慢的现实之中，五千年后的人类将发现，“日居正中”将是下午1时。“作为科技进步的产物，全面采用原子时，意味着人们可以完全摆脱地球自转与日月更替，孤独地奔跑在向前的路上。”，因此需要用<strong>闰秒</strong>进行修正。就最近国际电信联盟的投票结679C而言，<strong>闰秒</strong>得以保留，<code>UTC</code>依然作为公认的国际标准时间。</p>
+<p>​		除了上面的<strong>格林尼治时间</strong>（<code>GMT</code>）、<strong>原子时</strong>（<code>TAI</code>）、<strong>世界时</strong>（<code>UTC</code>），还有一些其他时间例如：</p>
+<p>​		- <strong>恒星时</strong>（<code>ST</code>:<code>Siderreal Time</code>）：以恒星为基础的相对于原子时不十分精准的时间；</p>
+<p>​		- <strong>太阳时</strong>（<code>Solar Time</code>）：以太阳为基础的相对于原子时不十分精准的时间；</p>
+<p>​		- <strong>地方时</strong>（<code>Local Time</code>）：各个地方的太阳时</p>
+<p>​		- <strong>历书时</strong>（<code>ET</code>：<code>Ephemeris Time</code>）：已被原子时取代，描述天体运动的方程式中采用的时间﹐或天体历表中应用的时间。它是由天体力学的定律确定的均匀时间，又称牛顿时</p>
+<h2 id="网络时间（NTP）协议"><a href="#网络时间（NTP）协议" class="headerlink" title="网络时间（NTP）协议"></a>网络时间（NTP）协议</h2><p>​		<code>NTP</code>(<code>Network Time Protocol</code>) 网络时间协议，工作在<code>UDP</code>的<code>123</code>端口上。是用来使计算机时间同步化的一种协议，它可以使计算机对其服务器或时钟源（如石英钟，GPS等等）做同步化，它可以提供高精准度的时间校正（局域网上与标准间差小于1毫秒，互联网上几十毫秒）<strong>，</strong>且可介由加密确认的方式来防止恶毒的协议攻击。</p>
+<p>​		既然确定了<code>UTC</code>作为公认的国际标准时间。那如何保证时间的统一性和准确性，是按照A这台计算机的时间，还是按照B这台计算机的时间？这就需要用到网络时间协议，英文名称为<code>Network Time Protocol</code> ，简称<code>NTP</code>。通过该协议，可以把计算机的时钟同步到<code>UTC</code>，其精度在局域网内可达<code>0.1ms</code>，在互联网上绝大多数的地方其精度可以达到<code>1-50ms</code>。</p>
+<p>​		在<code>NTP</code>中，时间按照服务器的等级传播，<code>Stratum-1</code>（我们一般称作一级服务器）为最高层，其时间源为标准<code>UTC</code>，该时间源可以来自外部，如<code>北斗</code>、<code>GPS</code>，也可以来自该服务器内部的原子钟。而<code>Stratum-2</code>（二级服务器）则从<code>Stratum-1</code>获取时间，<code>Stratum-3</code>从<code>Stratum-2</code>获取时间，以此类推，但<code>Stratum</code>层的总数最多不超过15层<strong>。</strong>为防止单点故障，每一级服务器都应该有多台，且数量一般为奇数，以便于下级服务器决策。</p>
+<p>​		在<code>NTP</code>协议中，下级服务器在指定的轮询时间范围（如<code>64</code>秒至<code>1024</code>秒）内，向上一级服务器通过<code>UDP123</code>端口发送报文，进行探测，根据多次的探测结果进行时间校准。在默认配置下，时差在<code>128ms</code>以内，会分成多步慢慢调整<strong>；</strong>时差在<code>128ms</code>至<code>1000ms</code>，时间会一次性调整到位；时差超过<code>1000ms</code>，<code>NTP</code>会判定为当前环境不可靠，而中止运行。有些系统支持对以上参数进行调整，但有些系统则不可以。</p>
+<p>​		正如之前所提到的，在对时间精确度要求很高的环境下进行闰秒的调整绝非易事，其最主要的原则就是不能发生时间跳变。在一个复杂网络环境中，不是所有的系统或设备都能支持参数调整，也就是说在向上级服务器探测时间时，时差不能超过<code>128ms</code>。所以闰秒调整需分多步进行，以保证每一级服务时间差不超过<code>128ms</code>。受到网络传输延时的影响，在广域网内，越远端的服务器（如<code>Stratum-15</code>）的时间波动越明显，因此，在确认闰秒分步调整时，需要考虑这方面的因素，合理确定分步范围。根据笔者最近两次的调整经验，在3层服务器架构中，一次闰秒调整需分13次至15次完成。</p>
+<p>​		<code>NTP</code>有足够的容错性，除之前提到的<code>1000ms</code>中止运行外，还能根据算法，选用可靠的上一级服务器。当无法正确获得上一级服务器时间时，<code>NTP</code>将使用自身的时间设备（普通设备一般为晶振，一级服务器一般为原子钟）提供服务。</p>
+<h2 id="NTP校时方式"><a href="#NTP校时方式" class="headerlink" title="NTP校时方式"></a>NTP校时方式</h2><p>​		时间服务器可以利用以下三种方式与其他服务器对时：<code>broadcast/multicast</code>，<code>client/server</code>和<code>Symmetric</code>。</p>
+<p>​		（1）<strong>broadcast&#x2F;multicast</strong>：主要适用于局域网的环境，时间服务器周期性的以广播的方式，将时间信息传送给其他网路中的时间服务器，其时间仅会有少许的延迟，而且配置非常的简单。但是此方式的精确度并不高，对时间精确度要求不是很高的情况下可以采用。</p>
+<p>​		（2）<strong>Symmetric</strong>：一台服务器可以从远端时间服务器获取时钟，如果需要也可提供时间信息给远端的时间服务器<strong>。</strong>此一方式适用于配置冗余的时间服务器，可以提供更高的精确度给主机。</p>
+<p>​		（3）<strong>client&#x2F;server</strong>：方式与symmetric方式比较相似，只是不提供给其他时间服务器时间信息，此方式适用于一台时间服务器接收上层时间服务器的时间信息，并提供时间信息给下层的用户。</p>
+<p>​		上述三种方式，时间信息的传输都使用UDP协议。时间服务器利用一个过滤演算法，及先前八个校时资料计算出时间参考值，判断后续校时包的精确性，一个相对较高的离散程度，表示一个对时资料的可信度比较低<strong>。</strong>仅从一个时间服务器获得校时信息，不能校正通讯过程所造成的时间偏差，而同时与许多时间服务器通信校时，就可利用过滤算法找出相对较可靠的时间来源，然后采用它的时间来校时。</p>
+<h1 id="ntpdate与chrony"><a href="#ntpdate与chrony" class="headerlink" title="ntpdate与chrony"></a>ntpdate与chrony</h1><p>​		一般来说在中大型的网络环境中时间服务器基本上来说是必须的,在内网中建立一台时间服务器,其他的服务器都来此服务器同步时间。 像虚拟机如果关机或者是被暂停了之后再开机的时候时间还是原来的时间,这个时候就需要从新同步时间。如果时间不对可能对业务环境有影响。 比如说像一些<strong>分布式系统</strong>、<strong>集群</strong>等相互协调工作的应用都需要时间同步服务来确保每个服务器的时间是一致的。 <code>ntpd</code>、<code>chrony</code>这两款时间管理服务应该怎样选型呢？<code>centos7.4</code>之前的系统默认是提供的<code>ntpd</code>来作为时间管理服务的,之后就是<code>chrony</code>。其实两个都差不多,看个人喜好。</p>
+<h2 id="手工修改系统时间与时区"><a href="#手工修改系统时间与时区" class="headerlink" title="手工修改系统时间与时区"></a>手工修改系统时间与时区</h2><ol>
+<li><p>修改时间</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1、设置时间</span></span><br><span class="line"><span class="built_in">date</span> -s <span class="string">&#x27;2023-03-13 12:00:00&#x27;</span></span><br><span class="line"><span class="comment"># 或则</span></span><br><span class="line">hwclock --<span class="built_in">set</span> --<span class="built_in">date</span> <span class="string">&#x27;2023-03-13 12:00:00&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2、以系统时钟为准，校正硬件时间（一般执行该命令）</span></span><br><span class="line">hwclock -w</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3、以硬件时钟稳准，校正系统时间</span></span><br><span class="line">hwclock -s</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>设置时区</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1、查看日期时间以及NTP状态（包括时区）</span></span><br><span class="line">[root@bogon <span class="built_in">local</span>]<span class="comment"># timedatectl</span></span><br><span class="line">      Local time: Mon 2023-03-13 16:21:31 CST</span><br><span class="line">  Universal time: Mon 2023-03-13 08:21:31 UTC</span><br><span class="line">        RTC time: Mon 2023-03-13 08:21:29</span><br><span class="line">       Time zone: Asia/Shanghai (CST, +0800)</span><br><span class="line">     NTP enabled: no</span><br><span class="line">NTP synchronized: no</span><br><span class="line"> RTC <span class="keyword">in</span> <span class="built_in">local</span> TZ: no</span><br><span class="line">      DST active: n/a</span><br><span class="line"><span class="comment">## 或者</span></span><br><span class="line">[root@bogon <span class="built_in">local</span>]<span class="comment"># ll /etc/localtime</span></span><br><span class="line">lrwxrwxrwx. 1 root root 35 Feb 10 11:53 /etc/localtime -&gt; ../usr/share/zoneinfo/Asia/Shanghai</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2、配置时区</span></span><br><span class="line"><span class="comment">## 查看支持哪些时区</span></span><br><span class="line">timedatectl list-timezones |more</span><br><span class="line"><span class="comment">## 配置时区</span></span><br><span class="line">timedatectl set-timezone Asia/Shanghai</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看时间同步状态</span></span><br><span class="line">timedatectl status</span><br><span class="line"></span><br><span class="line"><span class="comment"># 开启网络时间同步（配合下面ntpdate与chrony使用）</span></span><br><span class="line">timedatectl set-ntp <span class="literal">true</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="ntpdate同步互联网时间"><a href="#ntpdate同步互联网时间" class="headerlink" title="ntpdate同步互联网时间"></a>ntpdate同步互联网时间</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1、安装ntpdate</span></span><br><span class="line">yum install ntpdate -y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2、一次同步时间</span></span><br><span class="line">ntpdate 0.cn.pool.ntp.org</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3、定期同步系统时钟可以结合crontab进行使用</span></span><br></pre></td></tr></table></figure>
+
+<p><em>注</em>：NTP地址列表：<a target="_blank" rel="noopener" href="https://www.ntppool.org/zone/@">https://www.ntppool.org/zone/@</a></p>
+<h2 id="chrony同步互联网时间"><a href="#chrony同步互联网时间" class="headerlink" title="chrony同步互联网时间"></a>chrony同步互联网时间</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 1、安装chrony</span></span><br><span class="line">yum install chrony -y</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2、配置（/etc/chrony.conf）</span></span><br><span class="line"><span class="comment">#==========================================================================</span></span><br><span class="line"><span class="comment">#(1) server - 可用于时钟服务器，iburst 选项当服务器可达时，发送一个八个数据包而不是通常的一个数据包。 包间隔通常为2秒,可加快初始同步速度</span></span><br><span class="line"><span class="comment">#(2) driftfile - 根据实际时间计算出计算机增减时间的比率，将它记录到一个文件中，会在重启后为系统时钟作出补偿</span></span><br><span class="line"><span class="comment">#(3) rtcsync - 启用内核模式，系统时间每11分钟会拷贝到实时时钟（RTC）</span></span><br><span class="line"><span class="comment">#(4) allow/deny - 指定一台主机、子网，或者网络以允许或拒绝访问本服务器</span></span><br><span class="line"><span class="comment">#(5) cmdallow / cmddeny - 可以指定哪台主机可以通过chronyd使用控制命令</span></span><br><span class="line"><span class="comment">#(6) bindcmdaddress - 允许chronyd监听哪个接口来接收由chronyc执行的命令</span></span><br><span class="line"><span class="comment">#(7) makestep - 通常chronyd将根据需求通过减慢或加速时钟，使得系统逐步纠正所有时间偏差。在某些特定情况下，系统时钟可能会漂移过快，导致该调整过程消耗很长的时间来纠正系统时钟。该指令强制chronyd在调整期大于某个域值时调整系统时钟</span></span><br><span class="line"><span class="comment">#(8) local stratum 10 - 即使server指令中时间服务器不可用，也允许将本地时间作为标准时间授时给其它客户端</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 使用 pool.ntp.org 项目中的公共服务器。以server开，理论上想添加多少时间服务器都可以。</span></span><br><span class="line"><span class="comment"># Use public servers from the pool.ntp.org project.</span></span><br><span class="line"><span class="comment"># Please consider joining the pool (http://www.pool.ntp.org/join.html).</span></span><br><span class="line"><span class="comment"># 可以用pool,server或者local关键字具体用途可以查看下面文档</span></span><br><span class="line">server 0.cn.pool.ntp.org iburst</span><br><span class="line">server 1.cn.pool.ntp.org iburst</span><br><span class="line">server 2.cn.pool.ntp.org iburst</span><br><span class="line">server 3.cn.pool.ntp.org iburst</span><br><span class="line"></span><br><span class="line"><span class="comment"># 根据实际时间计算出服务器增减时间的比率，然后记录到一个文件中，在系统重启后为系统做出最佳时间补偿调整。</span></span><br><span class="line"><span class="comment"># Record the rate at which the system clock gains/losses time.</span></span><br><span class="line">driftfile /var/lib/chrony/drift</span><br><span class="line"></span><br><span class="line"><span class="comment"># 如果系统时钟的偏移量大于1秒，则允许系统时钟在前三次更新中步进。</span></span><br><span class="line"><span class="comment"># Allow the system clock to be stepped in the first three updates if its offset is larger than 1 second.</span></span><br><span class="line">makestep 1.0 3</span><br><span class="line"></span><br><span class="line"><span class="comment"># 启用实时时钟（RTC）的内核同步。</span></span><br><span class="line"><span class="comment"># Enable kernel synchronization of the real-time clock (RTC).</span></span><br><span class="line">rtcsync</span><br><span class="line"></span><br><span class="line"><span class="comment"># 通过使用 hwtimestamp 指令启用硬件时间戳</span></span><br><span class="line"><span class="comment"># Enable hardware timestamping on all interfaces that support it.</span></span><br><span class="line"><span class="comment">#hwtimestamp *</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Increase the minimum number of selectable sources required to adjust the system clock.</span></span><br><span class="line"><span class="comment">#minsources 2</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定 NTP 客户端地址，以允许或拒绝连接到扮演时钟服务器的机器(作为客户端可以使用该配置)</span></span><br><span class="line"><span class="comment"># Allow NTP client access from local network.</span></span><br><span class="line"><span class="comment">#allow 192.168.0.0/16</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Serve time even if not synchronized to a time source.</span></span><br><span class="line"><span class="comment">#local stratum 10</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定包含 NTP 身份验证密钥的文件。</span></span><br><span class="line"><span class="comment"># Specify file containing keys for NTP authentication.</span></span><br><span class="line"><span class="comment">#keyfile /etc/chrony.keys</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 指定日志文件的目录。</span></span><br><span class="line"><span class="comment"># Specify directory for log files.</span></span><br><span class="line">logdir /var/log/chrony</span><br><span class="line"></span><br><span class="line"><span class="comment"># 选择日志文件要记录的信息。</span></span><br><span class="line"><span class="comment"># Select which information is logged.</span></span><br><span class="line"><span class="comment">#log measurements statistics tracking</span></span><br><span class="line"><span class="comment">#==========================================================================</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 3、设置开机启动</span></span><br><span class="line">systemctl <span class="built_in">enable</span> chronyd</span><br><span class="line">systemctl start chronyd</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 4、查看 ntp_servers</span></span><br><span class="line">chronyc sources -v</span><br><span class="line"><span class="comment">## 查看 ntp_servers 状态</span></span><br><span class="line">chronyc sourcestats -v</span><br><span class="line"><span class="comment">## 查看 ntp_servers 是否在线</span></span><br><span class="line">chronyc activity -v</span><br><span class="line"><span class="comment">## 查看 ntp 详细信息</span></span><br><span class="line">chronyc tracking -v</span><br><span class="line"><span class="comment">## 强制同步下系统时钟</span></span><br><span class="line">chronyc -a makestep</span><br></pre></td></tr></table></figure>
+
+
+
+<p><em>注</em>：<strong>Chrony 详细配置</strong>：<a target="_blank" rel="noopener" href="https://chrony.tuxfamily.org/doc/4.1/chrony.conf.html">https://chrony.tuxfamily.org/doc/4.1/chrony.conf.html</a></p>
+<p>​		<strong>NTP地址列表</strong>：<a target="_blank" rel="noopener" href="https://www.ntppool.org/zone/@">https://www.ntppool.org/zone/@</a></p>
+</div></section><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="打赏" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><span class="icon iconify" data-icon="ri:hand-coin-line"></span></span><div id="reward-comment">求打赏</div><div id="qr" style="display:none;"><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/AliPay.png"><img loading="lazy" src="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/AliPay.png" alt="支付宝" title="支付宝"></a><div><span style="color:#00A3EE"><span class="icon iconify" data-icon="ri:alipay-line"></span></span></div></div><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/WechatPay.png"><img loading="lazy" src="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/WechatPay.png" alt="微信支付" title="微信支付"></a><div><span style="color:#2DC100"><span class="icon iconify" data-icon="ri:wechat-pay-line"></span></span></div></div></div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>Michael Chan</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="http://michaelchan90.github.io/2023/03/13/Centos%E6%97%B6%E9%92%9F%E5%90%8C%E6%AD%A5/" title="Centos时钟同步">http://michaelchan90.github.io/2023/03/13/Centos%E6%97%B6%E9%92%9F%E5%90%8C%E6%AD%A5/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><span class="icon iconify" data-icon="ri:creative-commons-line"></span><span class="icon iconify" data-icon="ri:creative-commons-by-line"></span><span class="icon iconify" data-icon="ri:creative-commons-nc-line"></span><span class="icon iconify" data-icon="ri:creative-commons-sa-line"></span></a> 许可协议。</li></ul><script>document.addEventListener('copy', function (event) {
+  const clipboardData = event.clipboardData || window.clipboardData;
+  if (!clipboardData) { return; }
+  const text = window.getSelection().toString();
+  if (text) {
+    event.preventDefault();
+    clipboardData.setData('text/plain', text + '\n\n本文作者：Michael Chan\n本文链接：http://michaelchan90.github.io/2023/03/13/Centos%E6%97%B6%E9%92%9F%E5%90%8C%E6%AD%A5/\n版权声明：本博客所有文章除特别声明外，均默认采用 CC BY-NC-SA 4.0 许可协议。');
+  }
+});</script></article><div class="post-nav"><div class="post-nav-item"></div><div class="post-nav-item"><a class="post-nav-next" href="/2023/03/10/Go%E8%AF%AD%E8%A8%80%E5%AD%A6%E4%B9%A0/" rel="next" title="Go语言学习"><span class="post-nav-text">Go语言学习</span><span class="icon iconify" data-icon="ri:arrow-right-s-line"></span></a></div></div></div><div class="hty-card" id="comment"><div class="comment-tooltip text-center"><span>若您想及时得到回复提醒，建议跳转 GitHub Issues 评论。</span><br></div></div></main><footer class="sidebar-translate" id="footer"><div class="beian"><a rel="noopener" href="https://beian.miit.gov.cn/" target="_blank">京ICP备xxxxxxxx号</a></div><div class="copyright"><span>&copy; 2023 </span><span class="with-love" id="animate" title="星无尘的赞助者"><span class="icon iconify" data-icon="ri:cloud-line"></span></span><span class="author"> Michael Chan</span></div><div class="live-time"><span>本博客已萌萌哒地运行</span><span id="display_live_time"></span><span class="moe-text">(●'◡'●)</span><script>function blog_live_time() {
+  setTimeout(blog_live_time, 1000);
+  const start = new Date('2023-01-01T00:00:00');
+  const now = new Date();
+  const timeDiff = (now.getTime() - start.getTime());
+  const msPerMinute = 60 * 1000;
+  const msPerHour = 60 * msPerMinute;
+  const msPerDay = 24 * msPerHour;
+  const passDay = Math.floor(timeDiff / msPerDay);
+  const passHour = Math.floor((timeDiff % msPerDay) / 60 / 60 / 1000);
+  const passMinute = Math.floor((timeDiff % msPerHour) / 60 / 1000);
+  const passSecond = Math.floor((timeDiff % msPerMinute) / 1000);
+  display_live_time.innerHTML = ` ${passDay} 天 ${passHour} 小时 ${passMinute} 分 ${passSecond} 秒`;
+}
+blog_live_time();
+</script></div><div id="busuanzi"><span id="busuanzi_container_site_uv" title="总访客量"><span><span class="icon iconify" data-icon="ri:user-line"></span></span><span id="busuanzi_value_site_uv"></span></span><span class="footer-separator">|</span><span id="busuanzi_container_site_pv" title="总访问量"><span><span class="icon iconify" data-icon="ri:eye-line"></span></span><span id="busuanzi_value_site_pv"></span></span><script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></footer></div><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><span class="icon iconify" data-icon="ri:arrow-up-s-line"></span><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a><a class="popup-trigger hty-icon-button icon-search" id="search" href="javascript:;" title="搜索"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:search-line"></span></span></a><script>window.addEventListener("DOMContentLoaded", () => {
+  // Handle and trigger popup window
+  document.querySelector(".popup-trigger").addEventListener("click", () => {
+    document.querySelector(".popup").classList.add("show");
+    setTimeout(() => {
+      document.querySelector(".search-input").focus();
+    }, 100);
+  });
+
+  // Monitor main search box
+  const onPopupClose = () => {
+    document.querySelector(".popup").classList.remove("show");
+  };
+
+  document.querySelector(".popup-btn-close").addEventListener("click", () => {
+    onPopupClose();
+  });
+
+  window.addEventListener("keyup", event => {
+    if (event.key === "Escape") {
+      onPopupClose();
+    }
+  });
+});
+</script><script src="https://fastly.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js"></script><script src="/js/search/local-search.js" defer type="module"></script><div class="popup search-popup"><div class="search-header"><span class="popup-btn-close close-icon hty-icon-button"><span class="icon iconify" data-icon="ri:close-line"></span></span></div><div class="search-input-container"><input class="search-input" id="local-search-input" type="text" placeholder="搜索..." value=""></div><div class="search-result-container"></div></div><script>function initMourn() {
+  const date = new Date();
+  const today = (date.getMonth() + 1) + "-" + date.getDate()
+  const mourn_days = ["4-4","9-18","12-13"]
+  if (mourn_days.includes(today)) {
+    document.documentElement.style.filter = "grayscale(1)";
+  }
+}
+initMourn();</script></body></html>
