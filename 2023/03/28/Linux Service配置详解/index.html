@@ -1,0 +1,190 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#0078E7"><meta name="author" content="Michael Chan"><meta name="copyright" content="Michael Chan"><meta name="generator" content="Hexo 6.3.0"><meta name="theme" content="hexo-theme-yun"><title>Linux Service配置详解 | MichaelChan Blog</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&amp;display=swap" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/star-markdown-css@0.4.1/dist/yun/yun-markdown.min.css"><link rel="stylesheet" href="https://fastly.jsdelivr.net/npm/prism-theme-vars/base.css"><script src="https://fastly.jsdelivr.net/npm/scrollreveal/dist/scrollreveal.min.js" defer></script><script>function initScrollReveal() {
+  [".post-card",".markdown-body img"].forEach((target)=> {
+    ScrollReveal().reveal(target);
+  })
+}
+document.addEventListener("DOMContentLoaded", initScrollReveal);
+document.addEventListener("pjax:success", initScrollReveal);
+</script><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="mask-icon" href="/favicon.svg" color="#0078E7"><link rel="preload" href="/css/hexo-theme-yun.css" as="style"><link rel="prefetch" href="/js/sidebar.js" as="script"><link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin><link rel="preconnect" href="https://fastly.jsdelivr.net/npm/" crossorigin><script id="yun-config">
+    window.Yun = {}
+    window.CONFIG = {"hostname":"michaelchan90.github.io","root":"/","title":"星无尘的博客","version":"1.10.9","mode":"auto","copycode":true,"page":{"isPost":true},"i18n":{"placeholder":"搜索...","empty":"找不到您查询的内容: ${query}","hits":"找到 ${hits} 条结果","hits_time":"找到 ${hits} 条结果（用时 ${time} 毫秒）"},"anonymous_image":"https://cdn.yunyoujun.cn/img/avatar/none.jpg","say":{"api":"https://v1.hitokoto.cn","hitokoto":true},"local_search":{"path":"/search.xml"},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"fireworks":{"colors":null},"vendors":{"host":"https://fastly.jsdelivr.net/npm/","darken":"https://fastly.jsdelivr.net/npm/darken@1.5.0"}};
+  </script><link rel="stylesheet" href="/css/hexo-theme-yun.css"><script src="/js/hexo-theme-yun.js" type="module"></script><link rel="preconnect" href="https://www.google-analytics.com" crossorigin><script async src="https://www.googletagmanager.com/gtag/js?id=UA-164931119-1"></script><script>if (CONFIG.hostname === location.hostname) {
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'UA-164931119-1');
+}</script><script data-ad-client="ca-pub-9775647830683925" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><script>(function(){
+  var bp = document.createElement('script');
+  var curProtocol = window.location.protocol.split(':')[0];
+  if (curProtocol === 'https') {
+    bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';
+  }
+  else {
+    bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+  }
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(bp, s);
+})();</script><meta name="description" content="xxxx.service文件是用来注册systemctl管理的服务所需要的配置文件,文件一般存放于&#x2F;lib&#x2F;systemd&#x2F;system,文件包括以下几个模块：  [Unit]模块  Description：给出当前服务的简单描述。  Documentation：给出文档位置。  After：表示在什么服务之后启动。  Before：表示在什么服务之前启动。  Wants：表示该服务和某服务存在某">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Linux Service配置详解">
+<meta property="og:url" content="http://michaelchan90.github.io/2023/03/28/Linux%20Service%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/index.html">
+<meta property="og:site_name" content="MichaelChan Blog">
+<meta property="og:description" content="xxxx.service文件是用来注册systemctl管理的服务所需要的配置文件,文件一般存放于&#x2F;lib&#x2F;systemd&#x2F;system,文件包括以下几个模块：  [Unit]模块  Description：给出当前服务的简单描述。  Documentation：给出文档位置。  After：表示在什么服务之后启动。  Before：表示在什么服务之前启动。  Wants：表示该服务和某服务存在某">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-03-28T02:57:11.000Z">
+<meta property="article:modified_time" content="2023-03-28T06:10:48.689Z">
+<meta property="article:author" content="Michael Chan">
+<meta name="twitter:card" content="summary"><script>(function() {
+  if (CONFIG.mode !== 'auto') return
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  const setting = localStorage.getItem('darken-mode') || 'auto'
+  if (setting === 'dark' || (prefersDark && setting !== 'light'))
+    document.documentElement.classList.toggle('dark', true)
+})()</script></head><body><script src="https://code.iconify.design/2/2.1.1/iconify.min.js"></script><script>// Define global variable
+IconifyProviders = {
+  // Empty prefix: overwrite default API provider configuration
+  '': {
+    // Use custom API first, use Iconify public API as backup
+    resources: [
+        'https://api.iconify.design',
+    ],
+    // Wait for 1 second before switching API hosts
+    rotate: 1000,
+  },
+};</script><script defer src="https://fastly.jsdelivr.net/npm/animejs@latest"></script><script defer src="/js/ui/fireworks.js" type="module"></script><canvas class="fireworks"></canvas><div class="container"><a class="sidebar-toggle hty-icon-button" id="menu-btn"><div class="hamburger hamburger--spin" type="button"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div></a><div class="sidebar-toggle sidebar-overlay"></div><aside class="sidebar"><script src="/js/sidebar.js" type="module"></script><ul class="sidebar-nav"><li class="sidebar-nav-item sidebar-nav-toc hty-icon-button" data-target="post-toc-wrap" title="文章目录"><span class="icon iconify" data-icon="ri:list-ordered"></span></li><li class="sidebar-nav-item sidebar-nav-overview hty-icon-button sidebar-nav-active" data-target="site-overview-wrap" title="站点概览"><span class="icon iconify" data-icon="ri:passport-line"></span></li></ul><div class="sidebar-panel sidebar-panel-active" id="site-overview-wrap"><div class="site-info mickey-mouse"><a class="site-author-avatar" href="/about/" title="Michael Chan"><img width="96" loading="lazy" src="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/go.jpg" alt="Michael Chan"><span class="site-author-status" title="又是新的一天">🤔</span></a><div class="site-author-name"><a href="/about/">Michael Chan</a></div><a class="site-name" href="/about/site.html">MichaelChan Blog</a><sub class="site-subtitle">星无尘</sub><div class="site-description"></div></div><nav class="site-state"><a class="site-state-item hty-icon-button icon-home" href="/" title="主页"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:home-4-line"></span></span></a><div class="site-state-item"><a href="/archives/" title="归档(archives)"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:archive-line"></span></span><span class="site-state-item-count">22</span></a></div><div class="site-state-item"><a href="/categories/" title="分类(categories)"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:folder-2-line"></span></span><span class="site-state-item-count">20</span></a></div><div class="site-state-item"><a href="/tags/" title="标签(tags)"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:price-tag-3-line"></span></span><span class="site-state-item-count">3</span></a></div></nav><hr style="margin-bottom:0.5rem"><div class="links-of-author"><a class="links-of-author-item hty-icon-button" rel="noopener" href="https://github.com/michaelchan90" title="GitHub" target="_blank" style="color:#181717"><span class="icon iconify" data-icon="ri:github-line"></span></a><a class="links-of-author-item hty-icon-button" rel="noopener" href="mailto:michaelchan90@outlook.com" title="E-Mail" target="_blank" style="color:#8E71C1"><span class="icon iconify" data-icon="ri:mail-line"></span></a></div><hr style="margin:0.5rem 1rem"><div class="links"><a class="links-item hty-icon-button" href="/links/" title="我的小伙伴们" style="color:dodgerblue"><span class="icon iconify" data-icon="ri:genderless-line"></span></a></div><br><a class="links-item hty-icon-button" id="toggle-mode-btn" href="javascript:;" title="Mode" style="color: #f1cb64"><span class="icon iconify" data-icon="ri:contrast-2-line"></span></a></div><div class="sidebar-panel" id="post-toc-wrap"><div class="post-toc"><div class="post-toc-content">很遗憾，咱没写啥目录</div></div></div></aside><main class="sidebar-translate" id="content"><div id="post"><article class="hty-card post-block" itemscope itemtype="https://schema.org/Article" style="--smc-primary:#0078E7;"><link itemprop="mainEntityOfPage" href="http://michaelchan90.github.io/2023/03/28/Linux%20Service%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/"><span hidden itemprop="author" itemscope itemtype="https://schema.org/Person"><meta itemprop="name" content="Michael Chan"><meta itemprop="description"></span><span hidden itemprop="publisher" itemscope itemtype="https://schema.org/Organization"><meta itemprop="name" content="MichaelChan Blog"></span><header class="post-header"><h1 class="post-title" itemprop="name headline">Linux Service配置详解</h1><div class="post-meta"><div class="post-time" style="display:block"><span class="post-meta-item-icon"><span class="icon iconify" data-icon="ri:calendar-line"></span></span> <time title="创建时间：2023-03-28 10:57:11" itemprop="dateCreated datePublished" datetime="2023-03-28T10:57:11+08:00">2023-03-28</time></div><span class="post-count"><span class="post-symbolcount"><span class="post-meta-item-icon" title="本文字数"><span class="icon iconify" data-icon="ri:file-word-line"></span></span> <span title="本文字数">1.1k</span><span class="post-meta-divider">-</span><span class="post-meta-item-icon" title="阅读时长"><span class="icon iconify" data-icon="ri:timer-line"></span></span> <span title="阅读时长">4m</span></span></span><span class="post-busuanzi"><span class="post-meta-divider">-</span><span class="post-meta-item-icon" title="阅读次数"><span class="icon iconify" data-icon="ri:eye-line"></span> <span id="busuanzi_value_page_pv"></span></span></span><div class="post-classify"><span class="post-category"> <span class="post-meta-item-icon" style="margin-right:3px;"><span class="icon iconify" data-icon="ri:folder-line"></span></span><span itemprop="about" itemscope itemtype="https://schema.org/Thing"><a class="category-item" href="/categories/%E8%BF%90%E7%BB%B4%E5%AE%89%E8%A3%85/" style="--text-color:var(--hty-text-color)" itemprop="url" rel="index"><span itemprop="text">运维安装</span></a></span></span></div></div></header><section class="post-body" itemprop="articleBody"><div class="post-content markdown-body"><p><code>xxxx.service</code>文件是用来注册<code>systemctl</code>管理的服务所需要的配置文件,文件一般存放于<code>/lib/systemd/system</code>,文件包括以下几个模块：</p>
+<ol>
+<li><p><strong>[Unit]模块</strong></p>
+<ul>
+<li><p><code>Description</code>：给出当前服务的简单描述。</p>
+</li>
+<li><p><code>Documentation</code>：给出文档位置。</p>
+</li>
+<li><p><code>After</code>：表示在什么服务之后启动。</p>
+</li>
+<li><p><code>Before</code>：表示在什么服务之前启动。</p>
+</li>
+<li><p><code>Wants</code>：表示该服务和某服务存在某种弱依赖关系，即某服务停止运行或退出不影响该服务继续运行。</p>
+</li>
+<li><p><code>Requires</code>：则表示”强依赖”关系，即某服务停止运行或退出，该服务也必须停止运行。</p>
+</li>
+<li><p><code>Wants</code>：与Requires只涉及依赖关系，与启动顺序无关，默认情况下是同时启动的。</p>
+</li>
+<li><p><code>Conflicts</code>：代表冲突的服务，即这个项目后面接的服务如果有启动，那么我们这个 unit 本身就不能启动，我们 unit 有启动，则此项目后的服务就不能启动，就是冲突性的检查。</p>
+</li>
+</ul>
+</li>
+<li><p><strong>[Service]模块</strong></p>
+<ul>
+<li><code>Type</code>：定义启动类型<ul>
+<li><code>simple</code>（默认值）：<code>ExecStart</code>启动的进程为主进程</li>
+<li><code>forking</code>：<code>ExecStart</code>将以fork()方式启动，此时父进程将会退出，子进程将成为主进程</li>
+<li><code>oneshot</code>：类似于simple，但只执行一次，<code>Systemd</code> 会等它执行完，才启动其他服务</li>
+<li><code>dbus</code>：类似于simple，但会等待 D-Bus 信号后启动</li>
+<li><code>notify</code>：类似于simple，启动结束后会发出通知信号，然后 <code>Systemd</code> 再启动其他服务</li>
+<li><code>idle</code>：类似于simple，但是要等到其他任务都执行完，才会启动该服务。一种使用场合是为让该服务的输出，不与其他服务的输出相混</li>
+</ul>
+</li>
+<li><code>ExecStart</code>：定义启动进程时执行的命令，就是手动启动时执行的命令。</li>
+<li><code>ExecReload</code>：重启服务时执行的命令。</li>
+<li><code>ExecStop</code>：停止服务时执行的命令。</li>
+<li><code>ExecStartPre</code>：启动服务之前执行的命令。</li>
+<li><code>ExecStartPost</code>：启动服务之后执行的命令。</li>
+<li><code>ExecStopPost</code>：停止服务之后执行的命令。</li>
+<li><code>killmod</code>：定义 <code>Systemd</code> 如何停止<code>sshd</code> 服务。<ul>
+<li><code>control-group</code>（默认值）：当前控制组里面的所有子进程，都会被杀掉</li>
+<li><code>process</code>：只杀主进程</li>
+<li><code>mixed</code>：主进程将收到 <code>SIGTERM</code> 信号，子进程收到 <code>SIGKILL</code> 信号</li>
+<li><code>none</code>：没有进程会被杀掉，只是执行服务的 stop 命令</li>
+</ul>
+</li>
+<li><code>Restart</code>：<ul>
+<li><code>no</code>（默认值）：退出后不会重启</li>
+<li><code>on-success</code>：只有正常退出时（退出状态码为0），才会重启</li>
+<li><code>on-failure</code>：非正常退出时（退出状态码非0），包括被信号终止和超时，才会重启<strong>（推荐）</strong></li>
+<li><code>on-abnormal</code>：只有被信号终止和超时，才会重启</li>
+<li><code>on-abort</code>：只有在收到没有捕捉到的信号终止时，才会重启</li>
+<li><code>on-watchdog</code>：超时退出，才会重启</li>
+<li><code>always</code>：不管是什么退出原因，总是重启</li>
+</ul>
+</li>
+<li><code>RestartSec</code>：表示 <code>Systemd</code> 重启服务之前，需要等待的秒数。</li>
+<li><code>user</code>：可以设置服务的用户名</li>
+<li><code>WorkingDirectory：</code>指定服务的安装目录</li>
+<li><code>RemainAfterExit</code>：当设置为 <code>RemainAfterExit=1</code> 时，则当这个 daemon 所属的所有程序都终止之后，此服务会再尝试启动。这对于<code>Type=oneshot</code>的服务很有帮助</li>
+<li><code>TimeoutSec：</code>若这个服务在启动或者是关闭时，因为某些缘故导致无法顺利 “ 正常启动或正常结束” 的情况下，则我们要等多久才进入 “ 强制结束 ” 的状态！</li>
+<li><code>EnvironmentFile</code>：可以指定启动脚本的环境配置文件！例如 <code>sshd.service</code>的配置文件写入到<code>/etc/sysconfig/sshd</code>当中！你也可以使用 Environment&#x3D; 后面接多个不同的Shell 变量来给予设置</li>
+</ul>
+</li>
+<li><p><strong>[Install]模块</strong></p>
+<ul>
+<li><p><code>WantedBy：</code>表示该服务所在的 <code>Target</code>。 <code>Target</code>的含义是服务组，表示一组服务。<code>WantedBy=multi-user.target</code>指的是服务所在的<code>Target</code>是<code>multi-user.target</code>。</p>
+<p>查看 <code>multi-user.target</code> 包含的所有服务：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">systemctl list-dependencies multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p><code>Systemd</code>：默认的启动 <code>Target</code>就是<code>multi-user.target</code>，在这个组里的所有服务，都将开机启动。</p>
+</li>
+<li><p><code>Also</code>：当目前这个 unit 本身被 enable 时， Also 后面接的 unit 也请 enable。 也就是具有相依性的服务可以写在这里。</p>
+</li>
+<li><p><code>Alias</code>：进行一个链接的别名，当<code>systemctl enable</code> 相关的服务时则此服务会进行链接文件的创建，以<code>multi-user.target</code> 为例，这个组是用来作为默认操作环境<code>default.target</code> 的规划，因此当你设置成 <code>default.target</code>时，这个<code>/etc/systemd/system/default.target</code> 就会链接到<code>/usr/lib/systemd/system/multi-user.target</code>。</p>
+</li>
+</ul>
+</li>
+</ol>
+</div></section><div id="reward-container"><span class="hty-icon-button button-glow" id="reward-button" title="打赏" onclick="var qr = document.getElementById(&quot;qr&quot;); qr.style.display = (qr.style.display === &quot;none&quot;) ? &quot;block&quot; : &quot;none&quot;;"><span class="icon iconify" data-icon="ri:hand-coin-line"></span></span><div id="reward-comment">求打赏</div><div id="qr" style="display:none;"><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/AliPay.png"><img loading="lazy" src="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/AliPay.png" alt="支付宝" title="支付宝"></a><div><span style="color:#00A3EE"><span class="icon iconify" data-icon="ri:alipay-line"></span></span></div></div><div style="display:inline-block"><a target="_blank" rel="noopener" href="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/WechatPay.png"><img loading="lazy" src="https://cdn.jsdelivr.net/gh/michaelchan90/blog-imgbed/img/WechatPay.png" alt="微信支付" title="微信支付"></a><div><span style="color:#2DC100"><span class="icon iconify" data-icon="ri:wechat-pay-line"></span></span></div></div></div></div><ul class="post-copyright"><li class="post-copyright-author"><strong>本文作者：</strong>Michael Chan</li><li class="post-copyright-link"><strong>本文链接：</strong><a href="http://michaelchan90.github.io/2023/03/28/Linux%20Service%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/" title="Linux Service配置详解">http://michaelchan90.github.io/2023/03/28/Linux%20Service%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/</a></li><li class="post-copyright-license"><strong>版权声明：</strong>本博客所有文章除特别声明外，均默认采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank" rel="noopener" title="CC BY-NC-SA 4.0 "><span class="icon iconify" data-icon="ri:creative-commons-line"></span><span class="icon iconify" data-icon="ri:creative-commons-by-line"></span><span class="icon iconify" data-icon="ri:creative-commons-nc-line"></span><span class="icon iconify" data-icon="ri:creative-commons-sa-line"></span></a> 许可协议。</li></ul><script>document.addEventListener('copy', function (event) {
+  const clipboardData = event.clipboardData || window.clipboardData;
+  if (!clipboardData) { return; }
+  const text = window.getSelection().toString();
+  if (text) {
+    event.preventDefault();
+    clipboardData.setData('text/plain', text + '\n\n本文作者：Michael Chan\n本文链接：http://michaelchan90.github.io/2023/03/28/Linux%20Service%E9%85%8D%E7%BD%AE%E8%AF%A6%E8%A7%A3/\n版权声明：本博客所有文章除特别声明外，均默认采用 CC BY-NC-SA 4.0 许可协议。');
+  }
+});</script></article><div class="post-nav"><div class="post-nav-item"><a class="post-nav-prev" href="/2023/03/28/Zookeeper%E5%AE%89%E8%A3%85/" rel="prev" title="Zookeeper安装"><span class="icon iconify" data-icon="ri:arrow-left-s-line"></span><span class="post-nav-text">Zookeeper安装</span></a></div><div class="post-nav-item"><a class="post-nav-next" href="/2023/03/20/RabbitMQ%E5%AE%89%E8%A3%85/" rel="next" title="RabbitMQ安装"><span class="post-nav-text">RabbitMQ安装</span><span class="icon iconify" data-icon="ri:arrow-right-s-line"></span></a></div></div></div><div class="hty-card" id="comment"><div class="comment-tooltip text-center"><span>若您想及时得到回复提醒，建议跳转 GitHub Issues 评论。</span><br></div></div></main><footer class="sidebar-translate" id="footer"><div class="beian"><a rel="noopener" href="https://beian.miit.gov.cn/" target="_blank">京ICP备xxxxxxxx号</a></div><div class="copyright"><span>&copy; 2023 </span><span class="with-love" id="animate" title="星无尘的赞助者"><span class="icon iconify" data-icon="ri:cloud-line"></span></span><span class="author"> Michael Chan</span></div><div class="live-time"><span>本博客已萌萌哒地运行</span><span id="display_live_time"></span><span class="moe-text">(●'◡'●)</span><script>function blog_live_time() {
+  setTimeout(blog_live_time, 1000);
+  const start = new Date('2023-01-01T00:00:00');
+  const now = new Date();
+  const timeDiff = (now.getTime() - start.getTime());
+  const msPerMinute = 60 * 1000;
+  const msPerHour = 60 * msPerMinute;
+  const msPerDay = 24 * msPerHour;
+  const passDay = Math.floor(timeDiff / msPerDay);
+  const passHour = Math.floor((timeDiff % msPerDay) / 60 / 60 / 1000);
+  const passMinute = Math.floor((timeDiff % msPerHour) / 60 / 1000);
+  const passSecond = Math.floor((timeDiff % msPerMinute) / 1000);
+  display_live_time.innerHTML = ` ${passDay} 天 ${passHour} 小时 ${passMinute} 分 ${passSecond} 秒`;
+}
+blog_live_time();
+</script></div><div id="busuanzi"><span id="busuanzi_container_site_uv" title="总访客量"><span><span class="icon iconify" data-icon="ri:user-line"></span></span><span id="busuanzi_value_site_uv"></span></span><span class="footer-separator">|</span><span id="busuanzi_container_site_pv" title="总访问量"><span><span class="icon iconify" data-icon="ri:eye-line"></span></span><span id="busuanzi_value_site_pv"></span></span><script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></footer></div><a class="hty-icon-button" id="back-to-top" aria-label="back-to-top" href="#"><span class="icon iconify" data-icon="ri:arrow-up-s-line"></span><svg class="progress-circle-container" viewBox="0 0 100 100"><circle class="progress-circle" id="progressCircle" cx="50" cy="50" r="48" fill="none" stroke="#0078E7" stroke-width="2" stroke-linecap="round"></circle></svg></a><a class="popup-trigger hty-icon-button icon-search" id="search" href="javascript:;" title="搜索"><span class="site-state-item-icon"><span class="icon iconify" data-icon="ri:search-line"></span></span></a><script>window.addEventListener("DOMContentLoaded", () => {
+  // Handle and trigger popup window
+  document.querySelector(".popup-trigger").addEventListener("click", () => {
+    document.querySelector(".popup").classList.add("show");
+    setTimeout(() => {
+      document.querySelector(".search-input").focus();
+    }, 100);
+  });
+
+  // Monitor main search box
+  const onPopupClose = () => {
+    document.querySelector(".popup").classList.remove("show");
+  };
+
+  document.querySelector(".popup-btn-close").addEventListener("click", () => {
+    onPopupClose();
+  });
+
+  window.addEventListener("keyup", event => {
+    if (event.key === "Escape") {
+      onPopupClose();
+    }
+  });
+});
+</script><script src="https://fastly.jsdelivr.net/npm/hexo-generator-searchdb@1.4.0/dist/search.js"></script><script src="/js/search/local-search.js" defer type="module"></script><div class="popup search-popup"><div class="search-header"><span class="popup-btn-close close-icon hty-icon-button"><span class="icon iconify" data-icon="ri:close-line"></span></span></div><div class="search-input-container"><input class="search-input" id="local-search-input" type="text" placeholder="搜索..." value=""></div><div class="search-result-container"></div></div><script>function initMourn() {
+  const date = new Date();
+  const today = (date.getMonth() + 1) + "-" + date.getDate()
+  const mourn_days = ["4-4","9-18","12-13"]
+  if (mourn_days.includes(today)) {
+    document.documentElement.style.filter = "grayscale(1)";
+  }
+}
+initMourn();</script></body></html>
